@@ -1,10 +1,6 @@
 package com.brian_crews.asteroids
-import java.awt.event.KeyEvent
-import java.awt.event.KeyListener
-import java.awt.event.MouseEvent
-import java.awt.event.MouseListener
 
-class InputManager: KeyListener, MouseListener {
+class InputManager {
     var forwardKey: Boolean = false
     var backwardKey: Boolean = false
     var leftKey: Boolean = false
@@ -13,7 +9,7 @@ class InputManager: KeyListener, MouseListener {
     var fireKey: Boolean = false
     var mousePosition: Coordinate = Coordinate(0f,0f)
 
-    override fun keyTyped(e: KeyEvent?) {
+    /* override fun keyTyped(e: KeyEvent?) {
     }
     override fun mouseClicked(e: MouseEvent?) {
     }
@@ -64,5 +60,5 @@ class InputManager: KeyListener, MouseListener {
                 KeyEvent.VK_SPACE -> fireKey = false
             }
         }
-    }
+    } */
 }

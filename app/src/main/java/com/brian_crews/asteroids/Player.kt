@@ -1,10 +1,12 @@
 package com.brian_crews.asteroids
-import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
-import java.io.File
 
-class Player(playSpace: PlaySpace, position: Coordinate):Entity(playSpace, position) {
-    override val image: BufferedImage = ImageIO.read(File("images/player.png"))
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+
+class Player(playSpace: GameView, position: Coordinate):GameEntity(playSpace, position) {
+
+    val titleImage = BitmapFactory.decodeResource(playSpace.resources, R.drawable.title)
+    override val image: Bitmap = BitmapFactory.decodeResource(playSpace.resources, R.drawable.title)
     override val mass: Float = 100f
     override val radius: Float = 30f
     override var imageScale: Float = (radius*2)/image.width

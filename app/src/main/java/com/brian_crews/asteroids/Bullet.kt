@@ -1,10 +1,12 @@
 package com.brian_crews.asteroids
-import java.awt.image.BufferedImage
-import java.io.File
-import javax.imageio.ImageIO
 
-class Bullet(playSpace: PlaySpace, position: Coordinate): Entity(playSpace, position) {
-    override val image: BufferedImage = ImageIO.read(File("images/bullet.png"))
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+
+class Bullet(playSpace: GameView, position: Coordinate): GameEntity(playSpace, position) {
+    //override val image: BufferedImage = ImageIO.read(File("images/bullet.png"))
+    override val image: Bitmap = BitmapFactory.decodeResource(playSpace.resources, R.drawable.bullet)
+
     override val mass: Float = 1f
     override val radius: Float = 10f
     override var imageScale: Float = (radius*2)/image.width

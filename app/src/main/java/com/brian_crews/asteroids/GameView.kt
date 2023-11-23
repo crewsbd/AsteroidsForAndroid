@@ -1,6 +1,5 @@
 package com.brian_crews.asteroids
 
-import GameEntity
 import android.content.Context
 import android.content.res.AssetManager
 import android.graphics.Bitmap
@@ -10,9 +9,11 @@ import android.graphics.Paint
 import android.graphics.Typeface
 import android.media.Image
 import android.util.AttributeSet
+import android.view.MotionEvent
 import android.view.SurfaceView
 import android.view.SurfaceHolder
 import androidx.core.content.res.ResourcesCompat
+import java.util.Random
 
 /**
  * GameView is our playground.
@@ -41,11 +42,12 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
 
     var gameState = GameState.START
 
+
     //val titleImage = ImageIO.read(File("images/title.png"))
     //val starField = ImageIO.read(File("images/star_field.png"))
 
     val titleImage = BitmapFactory.decodeResource(this.resources, R.drawable.title)
-    val startField = BitmapFactory.decodeResource(this.resources, R.drawable.star_field)
+    val starField = BitmapFactory.decodeResource(this.resources, R.drawable.star_field)
 
     var player = Player(this, Coordinate(20f, 20f))
 
@@ -62,10 +64,10 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
         asteroid.speed = (Coordinate(-.2f,-.14f))
         entities.add(asteroid)
 
-        setPreferredSize(Dimension(gameWidth, gameHeight))
-        setBackground(Color(0,10,30))
+        //setPreferredSize(Dimension(gameWidth, gameHeight))
+        //setBackground(Color(0,10,30))
         println("Start timer")
-        timer.start();
+        //timer.start();
         //END PORTED----
 
         // add callback
@@ -165,13 +167,13 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
         if(gameState == GameState.START) {
 
 
-            graphics2d.drawImage(titleImage, 0, 0, this)
-            canvas.drawBitmap()
+            //graphics2d.drawImage(titleImage, 0, 0, this)
+            canvas.drawBitmap(titleImage,0f,0f,null)  // Draw the title until a button is pressed
 
         }
         //Debug message
-        graphics2d.font = SMALL_FONT
-        graphics2d.drawString("SCORE: ${score}", 10, 20)
+        //graphics2d.font = SMALL_FONT
+        //graphics2d.drawString("SCORE: ${score}", 10, 20) //TODO REnder the score
         //END PORTED
 
     }
@@ -255,7 +257,7 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
             asteroidCountdown = newAsteroidDelay
             val newAsteroid = LargeAsteroid(this, Coordinate(newX.toFloat(), newY.toFloat()))
             newAsteroid.speed = Coordinate(newSpeedX.toFloat(), newSpeedY.toFloat())
-            newAsteroid.rotationSpeed = Random().nextFloat(.1f) - .05f
+            newAsteroid.rotationSpeed = (Random().nextFloat()*.1f) - .05f
             entities.add(newAsteroid)
         }
 
@@ -315,6 +317,12 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
         }
 
     }
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+
+
+        return true
+    }
+
     enum class GameState {
         START,
         PLAYING,
@@ -326,11 +334,11 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
         player = Player(this, Coordinate(gameWidth.toFloat()/2, gameHeight.toFloat()/2))
         entities.add(player)
     }
-    fun drawStringCentered(string:String, x:Int, y:Int, font:Font, graphics2d: Graphics2D) {
-        val fontMetrics = graphics2d.getFontMetrics(font)
-        val fontX = -fontMetrics.stringWidth(string)/2 + x
-        graphics2d.font = font
-        graphics2d.drawString(string, fontX, y)
-    }
+    //fun drawStringCentered(string:String, x:Int, y:Int, font:Font, graphics2d: Graphics2D) {
+    //    val fontMetrics = graphics2d.getFontMetrics(font)
+    //    val fontX = -fontMetrics.stringWidth(string)/2 + x
+    //    graphics2d.font = font
+    //    graphics2d.drawString(string, fontX, y)
+    //}
 
 }
