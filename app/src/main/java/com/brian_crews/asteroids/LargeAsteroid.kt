@@ -8,18 +8,21 @@ class LargeAsteroid(playSpace: GameView, position: Coordinate): GameEntity(playS
 
     override val image: Bitmap = BitmapFactory.decodeResource(playSpace.resources, R.drawable.large_asteroid)
     override val mass: Float = 200f
-    override val radius: Float = 60f
+    override val screenRadius: Float = .15f
+    override val radius: Float = screenRadius * playSpace.gameHeight
+
+
     override var imageScale: Float = (radius*2)/image.width
     override val collidesWithBoundaries: Boolean = false
-    var rotationSpeed = 0f
+    var rotationSpeed = .2f
     init {
-        weight = 2f
+
     }
 
-    override fun update() {
+    override fun update(deltaTime: Double) {
         //print("asteroidupdate")
-        position.x += speed.x
-        position.y += speed.y
-        facing = (facing + rotationSpeed + Math.PI*2).mod(Math.PI*2).toFloat()
+        position.x += (speed.x * deltaTime).toFloat()
+        position.y += (speed.y * deltaTime).toFloat()
+        facing = (facing + (rotationSpeed * deltaTime) + Math.PI*2).mod(Math.PI*2).toFloat()
     }
 }

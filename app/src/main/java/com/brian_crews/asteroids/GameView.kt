@@ -5,6 +5,7 @@ import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.media.Image
@@ -13,6 +14,9 @@ import android.view.MotionEvent
 import android.view.SurfaceView
 import android.view.SurfaceHolder
 import androidx.core.content.res.ResourcesCompat
+import android.content.res.Resources
+import android.media.metrics.PlaybackErrorEvent
+import android.util.Log
 import java.util.Random
 
 /**
@@ -23,15 +27,17 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
     private val thread: GameThread
 
     //PORTED----
-    val FRAME_RATE: Int = 60
-    val FRAME_DELAY: Int = 1000/FRAME_RATE
     val STARTING_ASTEROID_DELAY = 90f
     val GAME_OVER_PAUSE: Int = 180 //Time to pause after game over
     //val BIG_FONT =  Font("San-Serif", Font.BOLD, 40)
     //val SMALL_FONT =  Font("San-Serif", Font.BOLD, 16)
 
-    val gameHeight: Int = 480
-    val gameWidth: Int = 640
+
+    //var gameHeight:Int = this.height
+    //var gameWidth:Int = this.width
+    var gameWidth: Int = 640
+    var gameHeight: Int = 480
+
     var newAsteroidDelay: Float = 90f //frames
     var asteroidCountdown = newAsteroidDelay
     var stateCountdown: Int = GAME_OVER_PAUSE
@@ -39,8 +45,9 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
     //val timer:Timer = Timer(FRAME_DELAY, this)
     val entities: MutableList<GameEntity> = mutableListOf()
     var score: Int = 0
+    var deltaTime: Double = 0.0 // So we can print it
 
-    var gameState = GameState.START
+    var gameState = GameState.START // Start the game in START mode. It will display a title and wait for a key press
 
 
     //val titleImage = ImageIO.read(File("images/title.png"))
@@ -49,30 +56,15 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
     val titleImage = BitmapFactory.decodeResource(this.resources, R.drawable.title)
     val starField = BitmapFactory.decodeResource(this.resources, R.drawable.star_field)
 
-    var player = Player(this, Coordinate(20f, 20f))
+    var player:Player = Player(this, Coordinate(1f,1f))
 
     val inputState: InputManager = InputManager()
     //END PORTED----
 
 
     init {
-
-        //PORTED----
-        player.speed = (Coordinate(.2f, .1f))
-        entities.add(player)
-        val asteroid = LargeAsteroid(this, Coordinate(300f,300f))
-        asteroid.speed = (Coordinate(-.2f,-.14f))
-        entities.add(asteroid)
-
-        //setPreferredSize(Dimension(gameWidth, gameHeight))
-        //setBackground(Color(0,10,30))
-        println("Start timer")
-        //timer.start();
-        //END PORTED----
-
         // add callback
         holder.addCallback(this)
-
         // instantiate the game thread
         thread = GameThread(holder, this)
     }
@@ -80,12 +72,19 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
 
     override fun surfaceCreated(surfaceHolder: SurfaceHolder) {
         // start the game thread
+        player = Player(this, Coordinate(20f, 20f))
+
+        entities.add(player)
+        entities.add(LargeAsteroid(this, Coordinate(300f, 300f)))
+
         thread.setRunning(true)
         thread.start()
     }
 
-    override fun surfaceChanged(surfaceHolder: SurfaceHolder, i: Int, i1: Int, i2: Int) {
+    override fun surfaceChanged(surfaceHolder: SurfaceHolder, format: Int, width: Int, height: Int) {
 
+        gameWidth = width
+        gameHeight = height
     }
 
     override fun surfaceDestroyed(surfaceHolder: SurfaceHolder) {
@@ -105,9 +104,8 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
     /**
      * Function to update the positions of player and game objects
      */
-    fun update() {
-
-        logic()
+    fun update(deltaTime:Long) {
+        logic(deltaTime)
     }
 
     /**
@@ -115,6 +113,7 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
      */
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
+
         //PORTED
 
 
@@ -139,12 +138,13 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
             val fontPaint = Paint()
             fontPaint.typeface = ResourcesCompat.getFont(this.context, R.font.spaceage)  //TODO Get a type face in assets
             fontPaint.textAlign = Paint.Align.CENTER
+            fontPaint.textSize = gameHeight / 10f
+            fontPaint.color = Color.RED
+
+            canvas.drawText("GAME OVER", (gameWidth/2).toFloat(),
+                (gameHeight/2).toFloat(), fontPaint)
 
 
-
-            //val fontMetrics = graphics2d.getFontMetrics(font)
-            //val fontX = gameWidth/2 - fontMetrics.stringWidth("GAME OVER")/2
-            // If enough time elapsed, draw reset message
             if(stateCountdown <= 0) {
                 //drawStringCentered("Press Fire", gameWidth/2, gameHeight/2+100, SMALL_FONT, graphics2d)
                 canvas.drawText("PRESS FIRE", (gameWidth/2).toFloat(),
@@ -171,6 +171,14 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
             canvas.drawBitmap(titleImage,0f,0f,null)  // Draw the title until a button is pressed
 
         }
+
+        //Some debug info
+        var boldText: Paint = Paint()
+        boldText.textSize = 40f
+        boldText.color = Color.CYAN
+        canvas.drawText("player (${Math.floor(player.position.x.toDouble())}, ${Math.floor(player.position.y.toDouble())})", 200f, 100f, boldText)
+        canvas.drawText("screen (${gameWidth}, ${gameHeight})",200f,150f, boldText )
+        canvas.drawText("deltaTime ${deltaTime}", 200f, 200f, boldText)
         //Debug message
         //graphics2d.font = SMALL_FONT
         //graphics2d.drawString("SCORE: ${score}", 10, 20) //TODO REnder the score
@@ -178,20 +186,23 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
 
     }
 
-    private fun logic() {  //TODO Update this to use android stuff
+    private fun logic(deltaTime: Long) {  //TODO Update this to use android stuff
         // Handle input
+        val deltaTimeSeconds: Double = (deltaTime/1000000000).toDouble() //Elapsed time in seconds
+        this.deltaTime = deltaTimeSeconds
+
         if(gameState == GameState.PLAYING) {
             if (inputState.forwardKey) {
-                player.thrust(.1f)
+                player.thrust(0.1f, deltaTimeSeconds )
             }
-            if (inputState.backwardKey) {
-                player.thrust(-.1f)
+            if (inputState.backwardsKey) {
+                player.thrust(-.1f, deltaTimeSeconds)
             }
             if (inputState.rightKey) {
-                player.facing = (player.facing + 2 * Math.PI + .1).toFloat().mod(2f * Math.PI.toFloat())
+                player.facing = (player.facing + 2 * Math.PI + .1 * deltaTimeSeconds).toFloat().mod(2f * Math.PI.toFloat())
             }
             if (inputState.leftKey) {
-                player.facing = (player.facing + 2 * Math.PI - .1).toFloat().mod(2f * Math.PI.toFloat())
+                player.facing = (player.facing + 2 * Math.PI - .1 * deltaTimeSeconds).toFloat().mod(2f * Math.PI.toFloat())
             }
             if (inputState.fireKey) {
                 player.fire()
@@ -229,14 +240,14 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
                     println(" from Right")
                     newX = gameWidth + 60;
                     newY = Random().nextInt(gameHeight)
-                    newSpeedX = -1
+                    newSpeedX = -10  //Speeds are pixels per second
                     newSpeedY = 0
                 }
                 1 -> {
                     println(" from Left")
                     newX = -60
                     newY = Random().nextInt(gameHeight)
-                    newSpeedX = 1
+                    newSpeedX = 10
                     newSpeedY = 0
                 }
                 2 -> {
@@ -244,20 +255,20 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
                     newY = gameHeight + 60
                     newX = Random().nextInt(gameWidth)
                     newSpeedX = 0
-                    newSpeedY = -1
+                    newSpeedY = -10 //
                 }
                 3 -> {
                     println(" from Top")
                     newY = -60
                     newX = Random().nextInt(gameWidth)
                     newSpeedX = 0
-                    newSpeedY = 1
+                    newSpeedY = 10
                 }
             }
             asteroidCountdown = newAsteroidDelay
             val newAsteroid = LargeAsteroid(this, Coordinate(newX.toFloat(), newY.toFloat()))
             newAsteroid.speed = Coordinate(newSpeedX.toFloat(), newSpeedY.toFloat())
-            newAsteroid.rotationSpeed = (Random().nextFloat()*.1f) - .05f
+            newAsteroid.rotationSpeed = ((Random().nextFloat()*.1f) - .05f) * 20f
             entities.add(newAsteroid)
         }
 
@@ -265,7 +276,7 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
         // Boundary collision detection
         for (entity in entities) {
             if(gameState != GameState.START) { // Only move once the game is going
-                entity.update()
+                entity.update(deltaTimeSeconds)
             }
             // Entity logic
             if(entity.collidesWithBoundaries) {
@@ -319,7 +330,8 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
     }
     override fun onTouchEvent(event: MotionEvent): Boolean {
 
-
+        Log.d("INPUT", "onTouchEVent occured")
+        inputState.update(event)
         return true
     }
 

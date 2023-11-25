@@ -5,20 +5,20 @@ import android.graphics.BitmapFactory
 
 class Player(playSpace: GameView, position: Coordinate):GameEntity(playSpace, position) {
 
-    val titleImage = BitmapFactory.decodeResource(playSpace.resources, R.drawable.title)
-    override val image: Bitmap = BitmapFactory.decodeResource(playSpace.resources, R.drawable.title)
+    override val image: Bitmap = BitmapFactory.decodeResource(playSpace.resources, R.drawable.player)
     override val mass: Float = 100f
-    override val radius: Float = 30f
-    override var imageScale: Float = (radius*2)/image.width
+    override val screenRadius: Float = .05f //percent of view height
+    override val radius: Float = screenRadius * playSpace.gameHeight // pixel radius
+    override var imageScale: Float = (radius * 2) / image.width
     override val collidesWithBoundaries: Boolean = true
     val fireDelay: Float = 45f
     var fireCoolDown: Float = 0f
     val bulletSpeed: Float = 14f
 
 
-    override fun update() {
-        position.x += speed.x
-        position.y += speed.y
+    override fun update(deltaTime:Double) {
+        position.x += (speed.x*deltaTime).toFloat()
+        position.y += (speed.y*deltaTime).toFloat()
         fireCoolDown -= 1;
 
     }

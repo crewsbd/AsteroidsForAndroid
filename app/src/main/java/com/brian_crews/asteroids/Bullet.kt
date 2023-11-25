@@ -8,24 +8,25 @@ class Bullet(playSpace: GameView, position: Coordinate): GameEntity(playSpace, p
     override val image: Bitmap = BitmapFactory.decodeResource(playSpace.resources, R.drawable.bullet)
 
     override val mass: Float = 1f
-    override val radius: Float = 10f
+    override val screenRadius: Float = .01f
+    override val radius: Float = screenRadius * playSpace.gameHeight
     override var imageScale: Float = (radius*2)/image.width
     override val collidesWithBoundaries: Boolean = false
-    var timeToLive:Float = 100f
+    var timeToLive:Float = 10f //seconds
     init {
-        weight = 1f
+
     }
 
-    override fun update() {
+    override fun update(deltaTime: Double) {
         //print("asteroidupdate")
 
         facing = (Math.atan((speed.y / speed.x).toDouble()) - (Math.PI/2)).toFloat()
         if(speed.x < 0) {
             facing += (Math.PI).toFloat()
         }
-        position.x += speed.x
-        position.y += speed.y
-        timeToLive -= 1
+        position.x += (speed.x * deltaTime).toFloat()
+        position.y += (speed.y * deltaTime).toFloat()
+        timeToLive -= deltaTime.toFloat()
         if(timeToLive < 0) {
             alive = false
         }
