@@ -45,6 +45,7 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
 
     //val timer:Timer = Timer(FRAME_DELAY, this)
     val entities: MutableList<GameEntity> = mutableListOf()
+    val entityQueue: MutableList<GameEntity> = mutableListOf()
     var score: Int = 0
     var highScores: MutableList<Int> = mutableListOf()
     var deltaTime: Double = 0.0 // So we can print it
@@ -244,14 +245,14 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
                     println(" from Right")
                     newX = gameWidth + 60;
                     newY = Random().nextInt(gameHeight)
-                    newSpeedX = -10  //Speeds are pixels per second
+                    newSpeedX = -40  //Speeds are pixels per second
                     newSpeedY = 0
                 }
                 1 -> {
                     println(" from Left")
                     newX = -60
                     newY = Random().nextInt(gameHeight)
-                    newSpeedX = 10
+                    newSpeedX = 40
                     newSpeedY = 0
                 }
                 2 -> {
@@ -259,14 +260,14 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
                     newY = gameHeight + 60
                     newX = Random().nextInt(gameWidth)
                     newSpeedX = 0
-                    newSpeedY = -10 //
+                    newSpeedY = -40 //
                 }
                 3 -> {
                     println(" from Top")
                     newY = -60
                     newX = Random().nextInt(gameWidth)
                     newSpeedX = 0
-                    newSpeedY = 10
+                    newSpeedY = 40
                 }
             }
             asteroidCountdown = newAsteroidDelay
@@ -335,7 +336,7 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
             }
         }
         // Add queued entities
-
+        addEntityQueue()
 
 
         if(!player.alive && gameState != GameState.GAME_OVER) {  //Player died
@@ -374,14 +375,12 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
         player = Player(this, Coordinate(gameWidth.toFloat()/2, gameHeight.toFloat()/2))
         entities.add(player)
     }
-    fun addAsteroid(location: Coordinate) { // Remove this
-        //val newAsteroid = SmallAsteroid(this,  Coordinate(2f, 2f))
-        //newAsteroid.speed = Coordinate(0f, 0f)
-        //newAsteroid.rotationSpeed = ((Random().nextFloat()*.1f) - .05f) * 20f
-        //entities.add(newAsteroid)
+    fun queueEntity(newEntity: GameEntity) {  // Ques an entity to be added to the game. Avoids crashing on for loop
+        entityQueue.add(newEntity)
     }
-    fun queueEntity(newEntity: Entity) {  // Ques an entity to be added to the game. Avoids crashing on for loop
-
+    fun addEntityQueue() {  // Transfer queued enties to the entity list
+        entities.addAll(entityQueue)
+        entityQueue.clear()
     }
 
 }

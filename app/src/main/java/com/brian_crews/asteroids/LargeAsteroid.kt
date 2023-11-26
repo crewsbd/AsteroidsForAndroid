@@ -2,6 +2,11 @@ package com.brian_crews.asteroids
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import androidx.core.content.contentValuesOf
+import kotlin.math.PI
+import kotlin.math.atan
+import kotlin.math.cos
+import kotlin.math.sin
 
 
 class LargeAsteroid(playSpace: GameView, position: Coordinate): GameEntity(playSpace, position) {
@@ -25,11 +30,33 @@ class LargeAsteroid(playSpace: GameView, position: Coordinate): GameEntity(playS
         position.y += (speed.y * deltaTime).toFloat()
         facing = (facing + (rotationSpeed * deltaTime) + Math.PI*2).mod(Math.PI*2).toFloat()
     }
-    override fun deathAction() {  // This should make a new asteroid.  Currently crashing the for loop
-        //playSpace.entities.add(SmallAsteroid(playSpace, Coordinate(10f, 10f)))
-    //This glitches the game for some reason!
-    //playSpace.addAsteroid(Coordinate(10f, 10f)  )
+    override fun deathAction() {  // This should make a new asteroid.
+        //Make first child asteroid
+        val newDirection1 = atan(speed.y/speed.x.toDouble()) - PI/2 // Rotate CC 90deg
+        val newVectorFacing1X = cos(newDirection1)  // Vector direction unit
+        val newVectorFacing1Y = sin(newDirection1)
+        val newLocation1X = newVectorFacing1X * 70 + position.x
+        val newLocation1Y = newVectorFacing1Y * 70 + position.y
+        val newSpeed1X = newVectorFacing1X * 40 + speed.x // New speed
+        val newSpeed1Y = newVectorFacing1Y * 40 + speed.y
+        val child1 = SmallAsteroid(playSpace, Coordinate(newLocation1X.toFloat(), newLocation1Y.toFloat()))
+        child1.speed.x = newSpeed1X.toFloat()
+        child1.speed.y = newSpeed1Y.toFloat()
+
+        //Make second child asteroid
+        val newDirection2 = atan(speed.y/speed.x.toDouble()) + PI/2 // Rotate CC 90deg
+        val newVectorFacing2X = cos(newDirection2)  // Vector direction unit
+        val newVectorFacing2Y = sin(newDirection2)
+        val newLocation2X = newVectorFacing2X * 70 + position.x
+        val newLocation2Y = newVectorFacing2Y * 70 + position.y
+        val newSpeed2X = newVectorFacing2X * 40 + speed.x // New speed
+        val newSpeed2Y = newVectorFacing2Y * 40 + speed.y
+        val child2 = SmallAsteroid(playSpace, Coordinate(newLocation2X.toFloat(), newLocation2Y.toFloat()))
+        child2.speed.x = newSpeed2X.toFloat()
+        child2.speed.y = newSpeed2Y.toFloat()
 
 
+        playSpace.queueEntity(child1)
+        playSpace.queueEntity(child2)
     }
 }
