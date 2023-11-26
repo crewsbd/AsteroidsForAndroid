@@ -1,3 +1,4 @@
+// This is mostly boilerplate from a tutorial. It is the thread that triggers the update and draw methods according to the framerate
 package com.brian_crews.asteroids
 import android.graphics.Canvas
 import android.view.SurfaceHolder

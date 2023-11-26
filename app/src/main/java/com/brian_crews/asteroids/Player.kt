@@ -16,7 +16,7 @@ class Player(playSpace: GameView, position: Coordinate):GameEntity(playSpace, po
     val bulletSpeed: Float = 1000f //pixels per second
 
 
-    override fun update(deltaTime:Double) {
+    override fun update(deltaTime:Double) { // Updates player location and the fire cooldown counter
         position.x += (speed.x*deltaTime).toFloat()
         position.y += (speed.y*deltaTime).toFloat()
         fireCoolDown -= 1;

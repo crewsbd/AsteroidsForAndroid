@@ -1,6 +1,9 @@
+// This contains most of the game logic and is the surface that displays the game.
+
 package com.brian_crews.asteroids
 
 import android.content.Context
+import android.content.Entity
 import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -20,13 +23,10 @@ import android.provider.Settings.Global.getString
 import android.util.Log
 import java.util.Random
 
-/**
- * GameView is our playground.
- */
-
 class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context, attributes), SurfaceHolder.Callback {
     private val thread: GameThread
 
+    val DEBUG = false
     //PORTED----
     val STARTING_ASTEROID_DELAY = 90f
     val GAME_OVER_PAUSE: Int = 80 //Time to pause after game over
@@ -180,16 +180,14 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
         }
 
         //Some debug info
+        if (DEBUG) {
         var boldText: Paint = Paint()
         boldText.textSize = 40f
         boldText.color = Color.CYAN
         canvas.drawText("player (${Math.floor(player.position.x.toDouble())}, ${Math.floor(player.position.y.toDouble())})", 200f, 100f, boldText)
         canvas.drawText("screen (${gameWidth}, ${gameHeight})",200f,150f, boldText )
-        canvas.drawText("deltaTime ${"%.10f".format(deltaTime)}", 200f, 200f, boldText)
-        //Debug message
-        //graphics2d.font = SMALL_FONT
-        //graphics2d.drawString("SCORE: ${score}", 10, 20) //TODO REnder the score
-        //END PORTED
+        canvas.drawText("deltaTime ${"%.10f".format(deltaTime)}", 200f, 200f, boldText) }
+
 
     }
 
@@ -228,7 +226,6 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
             }
             else {
                 stateCountdown--
-                println("Countdown $stateCountdown")
             }
 
         }
@@ -320,12 +317,14 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
             }
             outter++
         }
+
         // Death actions
         for( entity in entities) {
             if(!entity.alive) {
                 entity.deathAction()
             }
         }
+
 
         // Remove dead entities
         val entityIterator = entities.iterator()
@@ -335,8 +334,12 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
                 entityIterator.remove()
             }
         }
+        // Add queued entities
+
+
+
         if(!player.alive && gameState != GameState.GAME_OVER) {  //Player died
-            highScores.add(score)
+            highScores.add(score)  // These lines store the new top three high scores.
             highScores.sort()
             highScores.reverse()
 
@@ -348,46 +351,37 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
 
                 apply()
             }
-
-
             gameState = GameState.GAME_OVER
             stateCountdown = GAME_OVER_PAUSE
         }
 
     }
-    override fun onTouchEvent(event: MotionEvent): Boolean {
+    override fun onTouchEvent(event: MotionEvent): Boolean {  // Just pass this on to the input manager
 
-        Log.d("INPUT", "onTouchEVent occured")
+        //Log.d("INPUT", "onTouchEVent occured")
         inputState.update(event)
         return true
     }
 
-    enum class GameState {
+    enum class GameState {  // Tracks the games overall state.
         START,
         PLAYING,
         GAME_OVER
     }
-    fun resetGame() {
-
-
-
-
+    fun resetGame() {  // Reset the player and score and asteroid spawn speed
         score = 0
         newAsteroidDelay = STARTING_ASTEROID_DELAY
         player = Player(this, Coordinate(gameWidth.toFloat()/2, gameHeight.toFloat()/2))
         entities.add(player)
     }
-    fun addAsteroid(location: Coordinate) {
+    fun addAsteroid(location: Coordinate) { // Remove this
         //val newAsteroid = SmallAsteroid(this,  Coordinate(2f, 2f))
         //newAsteroid.speed = Coordinate(0f, 0f)
         //newAsteroid.rotationSpeed = ((Random().nextFloat()*.1f) - .05f) * 20f
         //entities.add(newAsteroid)
     }
-    //fun drawStringCentered(string:String, x:Int, y:Int, font:Font, graphics2d: Graphics2D) {
-    //    val fontMetrics = graphics2d.getFontMetrics(font)
-    //    val fontX = -fontMetrics.stringWidth(string)/2 + x
-    //    graphics2d.font = font
-    //    graphics2d.drawString(string, fontX, y)
-    //}
+    fun queueEntity(newEntity: Entity) {  // Ques an entity to be added to the game. Avoids crashing on for loop
+
+    }
 
 }

@@ -8,7 +8,7 @@ class LargeAsteroid(playSpace: GameView, position: Coordinate): GameEntity(playS
 
     override val image: Bitmap = BitmapFactory.decodeResource(playSpace.resources, R.drawable.large_asteroid)
     override val mass: Float = 200f
-    override val screenRadius: Float = .15f
+    override val screenRadius: Float = .15f // 15% of screen height
     override val radius: Float = screenRadius * playSpace.gameHeight
 
 
@@ -19,13 +19,13 @@ class LargeAsteroid(playSpace: GameView, position: Coordinate): GameEntity(playS
 
     }
 
-    override fun update(deltaTime: Double) {
+    override fun update(deltaTime: Double) { // Updates location and spins the asteroid
         //print("asteroidupdate")
         position.x += (speed.x * deltaTime).toFloat()
         position.y += (speed.y * deltaTime).toFloat()
         facing = (facing + (rotationSpeed * deltaTime) + Math.PI*2).mod(Math.PI*2).toFloat()
     }
-    override fun deathAction() {
+    override fun deathAction() {  // This should make a new asteroid.  Currently crashing the for loop
         //playSpace.entities.add(SmallAsteroid(playSpace, Coordinate(10f, 10f)))
     //This glitches the game for some reason!
     //playSpace.addAsteroid(Coordinate(10f, 10f)  )

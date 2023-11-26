@@ -20,7 +20,7 @@ abstract class GameEntity(var playSpace: GameView, var position: Coordinate) {
 
 
 
-    abstract fun update(deltaTime:Double)
+    abstract fun update(deltaTime:Double) // Updates the entity location, orientation etc.
     abstract fun deathAction()  // This action gets performed when an entity dies.  Might spawn a new entity, or make an expolosion
     fun draw(graphics: Canvas, observer: GameView) {  // Draws the entity on the screen
         //print("Draw entity ${position.x.toString()} ${position.y.toString()}")
