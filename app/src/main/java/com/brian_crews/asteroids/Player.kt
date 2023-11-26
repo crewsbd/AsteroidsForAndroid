@@ -13,7 +13,7 @@ class Player(playSpace: GameView, position: Coordinate):GameEntity(playSpace, po
     override val collidesWithBoundaries: Boolean = true
     val fireDelay: Float = 45f
     var fireCoolDown: Float = 0f
-    val bulletSpeed: Float = 14f
+    val bulletSpeed: Float = 1000f //pixels per second
 
 
     override fun update(deltaTime:Double) {
@@ -22,15 +22,20 @@ class Player(playSpace: GameView, position: Coordinate):GameEntity(playSpace, po
         fireCoolDown -= 1;
 
     }
-    fun fire() {
+    override fun deathAction() {  // Nothing happens on death
+        if(!alive) {
+            //Do stuff
+        }
+    }
+    fun fire() {  //Creates a new bullet heading in the right direction
         if(fireCoolDown < 0) {
             fireCoolDown = fireDelay
             val fireDirection = Coordinate(Math.cos(facing.toDouble()).toFloat(), Math.sin(facing.toDouble()).toFloat())
-            val bullet: Bullet = Bullet(playSpace, Coordinate(position.x + (fireDirection.x * radius), position.y + (fireDirection.y * radius)))  // Push it out to stop collision
+            val bullet: Bullet = Bullet(playSpace, Coordinate(position.x + (fireDirection.x * radius*1.5f), position.y + (fireDirection.y * radius * 1.5f)))  // Push it out to stop collision
 
 
             bullet.speed =
-                Coordinate(fireDirection.x * bulletSpeed, fireDirection.y * bulletSpeed)
+                Coordinate(fireDirection.x * bulletSpeed + speed.x, fireDirection.y * bulletSpeed + speed.y)
             playSpace.entities.add(bullet)
         }
     }

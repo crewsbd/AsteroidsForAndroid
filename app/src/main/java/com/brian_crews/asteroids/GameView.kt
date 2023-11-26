@@ -16,6 +16,7 @@ import android.view.SurfaceHolder
 import androidx.core.content.res.ResourcesCompat
 import android.content.res.Resources
 import android.media.metrics.PlaybackErrorEvent
+import android.provider.Settings.Global.getString
 import android.util.Log
 import java.util.Random
 
@@ -28,7 +29,7 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
 
     //PORTED----
     val STARTING_ASTEROID_DELAY = 90f
-    val GAME_OVER_PAUSE: Int = 180 //Time to pause after game over
+    val GAME_OVER_PAUSE: Int = 80 //Time to pause after game over
     //val BIG_FONT =  Font("San-Serif", Font.BOLD, 40)
     //val SMALL_FONT =  Font("San-Serif", Font.BOLD, 16)
 
@@ -45,6 +46,7 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
     //val timer:Timer = Timer(FRAME_DELAY, this)
     val entities: MutableList<GameEntity> = mutableListOf()
     var score: Int = 0
+    var highScores: MutableList<Int> = mutableListOf()
     var deltaTime: Double = 0.0 // So we can print it
 
     var gameState = GameState.START // Start the game in START mode. It will display a title and wait for a key press
@@ -65,6 +67,13 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
     init {
         // add callback
         holder.addCallback(this)
+
+        val sharedPref = context.getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        //val defaultValue = resources.getInteger("prefs")
+        highScores.add(sharedPref.getInt("HighScore1", 0))
+        highScores.add(sharedPref.getInt("HighScore2", 0))
+        highScores.add(sharedPref.getInt("HighScore3", 0))
+
         // instantiate the game thread
         thread = GameThread(holder, this)
     }
@@ -136,30 +145,28 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
 
 
             val fontPaint = Paint()
-            fontPaint.typeface = ResourcesCompat.getFont(this.context, R.font.spaceage)  //TODO Get a type face in assets
+            fontPaint.typeface = ResourcesCompat.getFont(this.context, R.font.spaceage)  // Set the font for game over screen
             fontPaint.textAlign = Paint.Align.CENTER
             fontPaint.textSize = gameHeight / 10f
             fontPaint.color = Color.RED
 
             canvas.drawText("GAME OVER", (gameWidth/2).toFloat(),
                 (gameHeight/2).toFloat(), fontPaint)
+            canvas.drawText("#1 ${highScores[0]}", (gameWidth/2).toFloat(),
+                (gameHeight/2).toFloat()+200f, fontPaint)
+            canvas.drawText("#2 ${highScores[1]}", (gameWidth/2).toFloat(),
+                (gameHeight/2).toFloat()+250f, fontPaint)
+            canvas.drawText("#3 ${highScores[2]}", (gameWidth/2).toFloat(),
+                (gameHeight/2).toFloat() + 300f, fontPaint)
 
 
             if(stateCountdown <= 0) {
-                //drawStringCentered("Press Fire", gameWidth/2, gameHeight/2+100, SMALL_FONT, graphics2d)
                 canvas.drawText("PRESS FIRE", (gameWidth/2).toFloat(),
                     (gameHeight/2+100).toFloat(), fontPaint)
-
-
-                //graphics2d.drawString("Press Fire", 300, gameHeight/2 + 100)
             }
-
-            //graphics2d.font = font
 
             fontPaint.typeface = ResourcesCompat.getFont(this.context, R.font.spaceage)  //TODO Get a type face in assets
             fontPaint.textAlign = Paint.Align.CENTER
-            //graphics2d.drawString("GAME OVER", fontX, gameHeight/2)
-            //drawStringCentered("GAME OVER", gameWidth/2, gameHeight/2, BIG_FONT, graphics2d)
             canvas.drawText("GAME OVER", (gameWidth/2).toFloat(), (gameHeight/2).toFloat(), fontPaint)
 
 
@@ -178,7 +185,7 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
         boldText.color = Color.CYAN
         canvas.drawText("player (${Math.floor(player.position.x.toDouble())}, ${Math.floor(player.position.y.toDouble())})", 200f, 100f, boldText)
         canvas.drawText("screen (${gameWidth}, ${gameHeight})",200f,150f, boldText )
-        canvas.drawText("deltaTime ${deltaTime}", 200f, 200f, boldText)
+        canvas.drawText("deltaTime ${"%.10f".format(deltaTime)}", 200f, 200f, boldText)
         //Debug message
         //graphics2d.font = SMALL_FONT
         //graphics2d.drawString("SCORE: ${score}", 10, 20) //TODO REnder the score
@@ -188,21 +195,21 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
 
     private fun logic(deltaTime: Long) {  //TODO Update this to use android stuff
         // Handle input
-        val deltaTimeSeconds: Double = (deltaTime/1000000000).toDouble() //Elapsed time in seconds
+        val deltaTimeSeconds: Double = (deltaTime.toDouble()/1000000000) //Elapsed time in seconds
         this.deltaTime = deltaTimeSeconds
 
         if(gameState == GameState.PLAYING) {
             if (inputState.forwardKey) {
-                player.thrust(0.1f, deltaTimeSeconds )
+                player.thrust(200f, deltaTimeSeconds )
             }
             if (inputState.backwardsKey) {
-                player.thrust(-.1f, deltaTimeSeconds)
+                player.thrust(-200f, deltaTimeSeconds)
             }
             if (inputState.rightKey) {
-                player.facing = (player.facing + 2 * Math.PI + .1 * deltaTimeSeconds).toFloat().mod(2f * Math.PI.toFloat())
+                player.facing = (player.facing + 2 * Math.PI + 4 * deltaTimeSeconds).toFloat().mod(2f * Math.PI.toFloat())
             }
             if (inputState.leftKey) {
-                player.facing = (player.facing + 2 * Math.PI - .1 * deltaTimeSeconds).toFloat().mod(2f * Math.PI.toFloat())
+                player.facing = (player.facing + 2 * Math.PI - 4 * deltaTimeSeconds).toFloat().mod(2f * Math.PI.toFloat())
             }
             if (inputState.fireKey) {
                 player.fire()
@@ -306,12 +313,18 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
             var inner = outter + 1 // Don't need to repeat here
             while(inner < entities.size) {
                 if(entities[outter].collidesWith(entities[inner]) ) {
-                    println("$inner vs $outter")
+                    Log.d("COLLISION","${inner} speed:${entities[inner].speed.x},${entities[inner].speed.y} vs ${outter} speed:${entities[outter].speed.x},${entities[outter].speed.y}")
                     entities[outter].manageCollision(entities[inner])
                 }
                 inner++
             }
             outter++
+        }
+        // Death actions
+        for( entity in entities) {
+            if(!entity.alive) {
+                entity.deathAction()
+            }
         }
 
         // Remove dead entities
@@ -322,7 +335,21 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
                 entityIterator.remove()
             }
         }
-        if(!player.alive && gameState != GameState.GAME_OVER) {
+        if(!player.alive && gameState != GameState.GAME_OVER) {  //Player died
+            highScores.add(score)
+            highScores.sort()
+            highScores.reverse()
+
+            val sharedPref = context.getSharedPreferences("prefs", Context.MODE_PRIVATE)
+            with (sharedPref.edit()) {
+                putInt("HighScore1", highScores[0])
+                putInt("HighScore2", highScores[1])
+                putInt("HighScore3", highScores[2])
+
+                apply()
+            }
+
+
             gameState = GameState.GAME_OVER
             stateCountdown = GAME_OVER_PAUSE
         }
@@ -341,10 +368,20 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
         GAME_OVER
     }
     fun resetGame() {
+
+
+
+
         score = 0
         newAsteroidDelay = STARTING_ASTEROID_DELAY
         player = Player(this, Coordinate(gameWidth.toFloat()/2, gameHeight.toFloat()/2))
         entities.add(player)
+    }
+    fun addAsteroid(location: Coordinate) {
+        //val newAsteroid = SmallAsteroid(this,  Coordinate(2f, 2f))
+        //newAsteroid.speed = Coordinate(0f, 0f)
+        //newAsteroid.rotationSpeed = ((Random().nextFloat()*.1f) - .05f) * 20f
+        //entities.add(newAsteroid)
     }
     //fun drawStringCentered(string:String, x:Int, y:Int, font:Font, graphics2d: Graphics2D) {
     //    val fontMetrics = graphics2d.getFontMetrics(font)

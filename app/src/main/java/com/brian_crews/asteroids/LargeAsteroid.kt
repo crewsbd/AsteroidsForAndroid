@@ -25,4 +25,11 @@ class LargeAsteroid(playSpace: GameView, position: Coordinate): GameEntity(playS
         position.y += (speed.y * deltaTime).toFloat()
         facing = (facing + (rotationSpeed * deltaTime) + Math.PI*2).mod(Math.PI*2).toFloat()
     }
+    override fun deathAction() {
+        //playSpace.entities.add(SmallAsteroid(playSpace, Coordinate(10f, 10f)))
+    //This glitches the game for some reason!
+    //playSpace.addAsteroid(Coordinate(10f, 10f)  )
+
+
+    }
 }

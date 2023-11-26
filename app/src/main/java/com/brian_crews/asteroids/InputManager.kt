@@ -11,31 +11,35 @@ class InputManager {
     var boostKey: Boolean = false
     var fireKey: Boolean = false
     var mousePosition: Coordinate = Coordinate(0f,0f)
+    val deadSpot = 40f //pixels for now
 
-    var directionActive: Boolean = false
+    var movementPointerActive: Boolean = false
+    var movementPointerID:Int = 0
+    var movementTouchOrigin: Coordinate = Coordinate(0f,0f)
 
-    var touches: HashMap<Int, Touch> = HashMap<Int, Touch>()
 
     fun update(event: MotionEvent) {  // Called when motion event occurs
         val id = event.getPointerId(0)
 
-        Log.d("INPUT", "MotionEvent")
+
         when(event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> { // First touch down
-                Log.d("INPUT", "Action down ${id}")
-                if (touches[id] == null) {  // That touch doesn't exist yet
-                    if(event.x < 500) {  // Motion
-                        Log.d("INPUT", "Motion press")
-                        touches[id] = Touch(event.x, event.y, TouchType.MOTION)
-                        directionActive = true
-                    }
-                    else {  // Fire
-                        Log.d("INPUT", "Fire press")
-                        touches[id] = Touch(event.x, event.y, TouchType.FIRE)
-                    }
+            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> { //Any pointer down
+
+                val index = event.actionIndex
+
+                if(event.x < 600) {  // Motion touch
+                    if(!movementPointerActive) {
+                        movementPointerID =
+                            index  // Store the index of the pointer that will be the movement controller
+                        movementPointerActive = true
+                        movementTouchOrigin = Coordinate(event.x, event.y)
+                    } //Else ignore the touch
                 }
-            }
-            MotionEvent.ACTION_POINTER_DOWN -> { // Subsequent touch
+                else { // Fire touch
+                    fireKey = true
+                }
+
+
 
             }
             MotionEvent.ACTION_UP -> {  //Last touch up. Clear all input
@@ -45,36 +49,47 @@ class InputManager {
                 forwardKey = false
                 backwardsKey = false
                 boostKey = false
-                touches.clear() // Just to be sure
+                movementPointerID = 0
+                movementPointerActive = false
             }
             MotionEvent.ACTION_POINTER_UP -> {  // A finger has been raised
+                if(movementPointerActive && movementPointerID == event.actionIndex) {  // The movement pointer was released
+                    movementPointerID = 0
+                    movementPointerActive = false
+                }
+                else {  // fire button PROBABLY released.  I'm tired.
+                    fireKey = false
+                }
 
             }
             MotionEvent.ACTION_MOVE -> {
+                if(event.actionIndex == movementPointerID && movementPointerActive) { // Dealting with the movement touch
+                    if(event.y < movementTouchOrigin.y - deadSpot) {
+                        forwardKey = true
+                    }
+                    else {
+                        forwardKey = false
+                    }
+                    if(event.x > movementTouchOrigin.x + deadSpot) {
+                        rightKey = true
+
+                    }
+                    else {
+                        rightKey = false
+                    }
+                    if(event.x < movementTouchOrigin.x - deadSpot) {
+                        leftKey = true
+                    }
+                    else {
+                        leftKey = false
+                    }
+
+
+
+                }
 
             }
         }
-        // Analyze touch events
-        touches.forEach { touch ->
-            Log.d("INPUT", "Found a touch instance")
-            if(touch.value.Type == TouchType.FIRE) { //Found a fire key pressed
-                fireKey = true
-            }
-            if(touch.value.Type == TouchType.MOTION) { //Found a motion key pressed
-                directionActive = true
-
-                //TEMPORARY TEST CODE
-                forwardKey = true
-                leftKey = true
-            }
-        }
     }
 
-    class Touch(var x:Float, var y:Float, val Type: TouchType) {
-
-    }
-    enum class  TouchType {
-        FIRE,
-        MOTION
-    }
 }

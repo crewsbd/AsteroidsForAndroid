@@ -21,7 +21,8 @@ abstract class GameEntity(var playSpace: GameView, var position: Coordinate) {
 
 
     abstract fun update(deltaTime:Double)
-    fun draw(graphics: Canvas, observer: GameView) {
+    abstract fun deathAction()  // This action gets performed when an entity dies.  Might spawn a new entity, or make an expolosion
+    fun draw(graphics: Canvas, observer: GameView) {  // Draws the entity on the screen
         //print("Draw entity ${position.x.toString()} ${position.y.toString()}")
 
         var transform:Matrix = Matrix()
@@ -34,29 +35,29 @@ abstract class GameEntity(var playSpace: GameView, var position: Coordinate) {
         graphics.drawBitmap(image, transform,null )
 
     }
-    fun thrust(amount: Float, deltaTime:Double) {
+    fun thrust(amount: Float, deltaTime:Double) {  //Applies thrust to the entity
         speed.x += (Math.cos(facing.toDouble())*amount*deltaTime).toFloat()
         speed.y += (Math.sin(facing.toDouble())*amount*deltaTime).toFloat()
 
     }
-    fun collidesWith(entity: GameEntity): Boolean {
+    fun collidesWith(entity: GameEntity): Boolean {  //CHecks if there is a collision
         val xDistance = this.position.x - entity.position.x
         val yDistance = this.position.y - entity.position.y
 
         val distance = Math.sqrt( Math.pow(xDistance.toDouble(), 2.0) +  Math.pow(yDistance.toDouble(), 2.0) )
-        if(distance < this.radius + entity.radius) {
-            //println("Collision!")
+        if(this.alive && entity.alive && distance < this.radius + entity.radius) {
             return true
         }
         else {
             return false
         }
     }
-    fun manageCollision(entity: GameEntity) {
+    fun manageCollision(entity: GameEntity) {  // If a collision has occured, call this. It kills the entity
         this.alive = false
         entity.alive = false
         if(this is Bullet || entity is Bullet) {
             playSpace.score++
         }
     }
+
 }

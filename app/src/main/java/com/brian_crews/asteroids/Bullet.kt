@@ -32,4 +32,9 @@ class Bullet(playSpace: GameView, position: Coordinate): GameEntity(playSpace, p
         }
 
     }
+    override fun deathAction() {
+        if(!alive) {
+            //Do stuff
+        }
+    }
 }

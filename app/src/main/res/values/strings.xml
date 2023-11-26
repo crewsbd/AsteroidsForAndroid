@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Asteroids</string>
+    <string name="preference_file">preferences</string>
 </resources>
