@@ -8,7 +8,7 @@ class Bullet(playSpace: GameView, position: Coordinate): GameEntity(playSpace, p
 
     override val mass: Float = 1f
     override val screenRadius: Float = .01f
-    override val radius: Float = screenRadius * playSpace.gameHeight
+    override var radius: Float = screenRadius * playSpace.gameHeight
     override var imageScale: Float = (radius*2)/image.width
     override val collidesWithBoundaries: Boolean = false
     var timeToLive:Float = 10f //seconds

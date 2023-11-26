@@ -8,7 +8,7 @@ class Player(playSpace: GameView, position: Coordinate):GameEntity(playSpace, po
     override val image: Bitmap = BitmapFactory.decodeResource(playSpace.resources, R.drawable.player)
     override val mass: Float = 100f
     override val screenRadius: Float = .05f //percent of view height
-    override val radius: Float = screenRadius * playSpace.gameHeight // pixel radius
+    override var radius: Float = screenRadius * playSpace.gameHeight // pixel radius
     override var imageScale: Float = (radius * 2) / image.width
     override val collidesWithBoundaries: Boolean = true
     val fireDelay: Float = 45f

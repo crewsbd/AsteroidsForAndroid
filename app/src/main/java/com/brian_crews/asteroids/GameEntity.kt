@@ -8,7 +8,7 @@ abstract class GameEntity(var playSpace: GameView, var position: Coordinate) {
     abstract val image: Bitmap
     abstract val mass: Float
     abstract val screenRadius: Float // Percent of view height
-    abstract val radius: Float
+    abstract var radius: Float
     abstract var imageScale: Float
     abstract val collidesWithBoundaries: Boolean
     var facing: Float = 0f
@@ -58,6 +58,10 @@ abstract class GameEntity(var playSpace: GameView, var position: Coordinate) {
         if(this is Bullet || entity is Bullet) {
             playSpace.score++
         }
+    }
+    fun updateSize() {
+        radius = screenRadius * playSpace.gameHeight // pixel radius
+        imageScale = (radius * 2) / image.width
     }
 
 }

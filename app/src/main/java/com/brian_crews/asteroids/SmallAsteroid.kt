@@ -9,7 +9,7 @@ class SmallAsteroid(playSpace: GameView, position: Coordinate): GameEntity(playS
     override val image: Bitmap = BitmapFactory.decodeResource(playSpace.resources, R.drawable.large_asteroid)
     override val mass: Float = 200f
     override val screenRadius: Float = .07f  // Entity sizes are in units of screen height
-    override val radius: Float = screenRadius * playSpace.gameHeight
+    override var radius: Float = screenRadius * playSpace.gameHeight
 
 
     override var imageScale: Float = (radius*2)/image.width

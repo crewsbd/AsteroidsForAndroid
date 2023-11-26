@@ -95,6 +95,9 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
 
         gameWidth = width
         gameHeight = height
+        for (entity in entities) {
+            entity.updateSize()
+        }
     }
 
     override fun surfaceDestroyed(surfaceHolder: SurfaceHolder) {
@@ -124,16 +127,7 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
 
-        //PORTED
-
-
-        //These don't have android equivalents that I know of
-        //val graphics2d: Graphics2D = g as Graphics2D
-        //graphics2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        //graphics2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
-
-        //graphics2d.drawImage(starField, 0, 0, this)
-        canvas.drawBitmap(starField, 0f, 0f, null) //Last parameter is the paint style. Will need
+        canvas.drawBitmap(starField, (gameWidth/2 - starField.width/2).toFloat(), 0f, null) //Last parameter is the paint style. Will need
 
         for( entity in entities) {
             //entity.draw(g, this)
@@ -176,7 +170,7 @@ class GameView(context: Context, attributes: AttributeSet) : SurfaceView(context
 
 
             //graphics2d.drawImage(titleImage, 0, 0, this)
-            canvas.drawBitmap(titleImage,0f,0f,null)  // Draw the title until a button is pressed
+            canvas.drawBitmap(titleImage,(gameWidth/2 - titleImage.width/2).toFloat(),0f,null)  // Draw the title until a button is pressed
 
         }
 
